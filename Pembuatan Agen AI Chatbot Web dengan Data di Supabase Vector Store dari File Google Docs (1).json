@@ -1,0 +1,450 @@
+{
+  "name": "Pembuatan Agen AI Chatbot Web dengan Data di Supabase Vector Store dari File Google Docs",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e91bef5d-532c-4ae5-a5bc-138f1eb752f1",
+              "name": "={{ $json.id }}",
+              "value": "=1S8wlivthxiPdni1P9IikB4RqmcmafqtAVBj2Wz8lZCc",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "3098b8df-0cda-487e-b795-99bbb8d30fdb",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json['1S8wlivthxiPdni1P9IikB4RqmcmafqtAVBj2Wz8lZCc'] }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "text/plain"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "42e3aaea-18b8-4d84-a5bb-de2bb72c82c5",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "rG8jSZDajhiNsQJz",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "12AHtepSSYPX3n0FqqWHKhcOap-zszrsb",
+          "mode": "list",
+          "cachedResultName": "Nfa_Academy_Arfan",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/12AHtepSSYPX3n0FqqWHKhcOap-zszrsb"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "7280baf5-df5d-4e4d-9c6b-3d5e8df2d700",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "rG8jSZDajhiNsQJz",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "1a6db90e-db82-4067-ba1e-db23415395da",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "ubi_ungu_v3",
+          "mode": "list",
+          "cachedResultName": "ubi_ungu_v3"
+        },
+        "options": {
+          "queryName": "match_documents_v3"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        832,
+        0
+      ],
+      "id": "1d210290-03b6-40bc-8ccd-e80f0fe2abca",
+      "name": "Supabase Vector Store",
+      "notesInFlow": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "sRQO60lCvA5gO8zM",
+          "name": "Supabase account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "file_id",
+                "value": "={{ $json.data }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        976,
+        208
+      ],
+      "id": "a99ea7c3-b2fa-4659-8c12-1549872d543a",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        336
+      ],
+      "id": "cb8d0c22-6908-4eae-98ed-e644148b34e2",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -16,
+        496
+      ],
+      "id": "9ec5f4a3-d0cc-4bc7-8a97-e8d4ad1d8a9c",
+      "name": "When chat message received",
+      "webhookId": "630799d0-0619-4614-93ef-07fa35c50e5f"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Role: Manajer Operasional AI Es Ubi Ungu Nusantara.\nTugas: Berikan info akurat (SOP, resep, sejarah, solusi) kepada staf/pelanggan.\n\n##Aturan Wajib:\nSapaan: Mulai jawaban dengan \"Sobat Ungu\" 💜. Nada bicara antusias, modern, dan ramah.\n\nData: Gunakan Supabase Vector Store sebagai satu-satunya sumber. Dilarang mengarang informasi!\n\nFallback: Jika data tidak ada, jawab: \"Mohon maaf Sobat Ungu, informasi tersebut belum tersedia di buku panduan operasional kami. Silakan tanyakan langsung ke tim pusat.\"\n\nDetail SOP: Jelaskan langkah resep secara berurutan dan tekankan aspek visual (aesthetic/gradient).\n\nKendala IT: Jika sistem error, arahkan segera ke tim IT (Arfan).\n\nGaya Bahasa: Bahasa Indonesia kasual-profesional + emoji (💜, 🥤, ✨). Maksimal 250 kata.\n\nDi Luar Topik: Jika pertanyaan melenceng, jawab: \"Mohon maaf Sobat Ungu, fokus saya saat ini adalah membantu operasional Es Ubi Ungu Nusantara. Ada yang bisa saya bantu terkait menu atau SOP kita?\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        192,
+        496
+      ],
+      "id": "afba63d0-a297-4fb4-8c72-6488e4c3af2b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        288,
+        944
+      ],
+      "id": "a4c67372-af6f-4dbe-ac16-45c2c3068093",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Gunakan alat ini untuk mencari informasi mengenai SOP, menu, sejarah, dan panduan operasional Es Ubi Ungu Nusantara.",
+        "tableName": {
+          "__rl": true,
+          "value": "ubi_ungu_v3",
+          "mode": "list",
+          "cachedResultName": "ubi_ungu_v3"
+        },
+        "topK": 2,
+        "options": {
+          "queryName": "match_documents_v3"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        720
+      ],
+      "id": "22329f8c-0785-4dcf-b25b-db1aa0adb8c0",
+      "name": "Supabase Vector Store1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "sRQO60lCvA5gO8zM",
+          "name": "Supabase account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        880,
+        208
+      ],
+      "id": "85855921-f4e8-490d-828c-e7b35f56cd72",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "7JUPLiauNgBdU1uE",
+          "name": "Google Gemini(PaLM) Api account (QR)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        480,
+        880
+      ],
+      "id": "f74c7258-3bb0-4f62-bcf5-59573b307599",
+      "name": "Embeddings Google Gemini1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "7JUPLiauNgBdU1uE",
+          "name": "Google Gemini(PaLM) Api account (QR)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        64,
+        704
+      ],
+      "id": "f7af0951-0dbe-472c-b764-84f95f0e40c5",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "hgj84YeEcVwBrfUZ",
+          "name": "Groq account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "4ad666e2-523b-49cc-8ac0-105fd835ec5a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4ab2e820f183119a1cff325c1627456cb8157705ca3c559ce30aafaab9ef8286"
+  },
+  "id": "05U3mj5GiHFQ8O3V",
+  "tags": []
+}
